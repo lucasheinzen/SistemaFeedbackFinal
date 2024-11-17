@@ -15,14 +15,20 @@ public class DesarrolladorDAOImpl implements DesarrolladorDAO {
     public void insertarDesarrollador(Desarrollador desarrollador) {
         String sql = "INSERT INTO Desarrollador (nombre_usuario, correo, contraseña) VALUES (?, ?, ?)";
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+             PreparedStatement pstmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, desarrollador.getNombreUsuario());
             pstmt.setString(2, desarrollador.getCorreo());
             pstmt.setString(3, desarrollador.getContraseña());
             pstmt.executeUpdate();
-            System.out.println("Desarrollador insertado con éxito.");
+
+            // Obtener el ID generado automáticamente
+            ResultSet generatedKeys = pstmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                desarrollador.setIdDesarrollador(generatedKeys.getInt(1));
+                System.out.println("Desarrollador insertado con éxito. ID generado: " + desarrollador.getIdDesarrollador());
+            }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al insertar desarrollador: " + e.getMessage());
         }
     }
 
@@ -30,10 +36,12 @@ public class DesarrolladorDAOImpl implements DesarrolladorDAO {
     public Desarrollador obtenerDesarrolladorPorId(int id) {
         String sql = "SELECT * FROM Desarrollador WHERE id_desarrollador = ?";
         Desarrollador desarrollador = null;
+
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
+
             if (rs.next()) {
                 desarrollador = new Desarrollador(
                         rs.getInt("id_desarrollador"),
@@ -43,8 +51,9 @@ public class DesarrolladorDAOImpl implements DesarrolladorDAO {
                 );
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al obtener desarrollador por ID: " + e.getMessage());
         }
+
         return desarrollador;
     }
 

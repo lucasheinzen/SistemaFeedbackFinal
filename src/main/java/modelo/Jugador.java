@@ -1,4 +1,8 @@
 package modelo;
+/**
+ * Clase que representa a un jugador.
+ * Contiene información sobre el jugador y métodos para acceder a sus datos.
+ */
 
 public class Jugador {
     private int idJugador;

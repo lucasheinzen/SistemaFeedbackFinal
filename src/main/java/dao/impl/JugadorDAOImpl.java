@@ -15,14 +15,22 @@ public class JugadorDAOImpl implements JugadorDAO {
     public void insertarJugador(Jugador jugador) {
         String sql = "INSERT INTO Jugador (nombre_usuario, correo, contraseña) VALUES (?, ?, ?)";
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+             PreparedStatement pstmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, jugador.getNombreUsuario());
             pstmt.setString(2, jugador.getCorreo());
             pstmt.setString(3, jugador.getContraseña());
             pstmt.executeUpdate();
-            System.out.println("Jugador insertado con éxito.");
+
+            // Obtener el ID generado automáticamente
+            ResultSet generatedKeys = pstmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                jugador.setIdJugador(generatedKeys.getInt(1)); // Asignar el ID generado al objeto
+                System.out.println("Jugador insertado con éxito. ID generado: " + jugador.getIdJugador());
+            } else {
+                System.out.println("No se pudo obtener el ID generado.");
+            }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al insertar jugador: " + e.getMessage());
         }
     }
 
